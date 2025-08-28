@@ -23,7 +23,7 @@ public class ConfigCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         // 権限チェック
-        if (!sender.hasPermission("myplugin.admin")) {
+        if (!sender.hasPermission("deathmode.admin")) {
             sender.sendMessage("§cこのコマンドを実行する権限がありません");
             return true;
         }

@@ -74,6 +74,7 @@ public final class DeathMode implements CommandExecutor, TabCompleter, Listener 
             if (config.isDebugEnabled()) {
                 plugin.getLogger().info(String.format("Player %s disabled deathmode mode", player.getName()));
             }
+
         } else if (args.length == 1 && args[0].equalsIgnoreCase(this.completeList[2])) {
             // show config list
             try {
@@ -91,7 +92,7 @@ public final class DeathMode implements CommandExecutor, TabCompleter, Listener 
             }
         } else if (args.length >= 2 && args[0].equalsIgnoreCase(this.completeList[2]) && args[1].equalsIgnoreCase("add")) {
             // config add command - requires admin permission
-            if (!player.hasPermission("myplugin.admin")) {
+            if (!player.hasPermission("deathmode.admin")) {
                 player.sendMessage(config.getNoPermissionMessage());
                 return true;
             }
@@ -116,7 +117,7 @@ public final class DeathMode implements CommandExecutor, TabCompleter, Listener 
             }
         } else if (args.length >= 2 && args[0].equalsIgnoreCase(this.completeList[2]) && args[1].equalsIgnoreCase("remove")) {
             // config remove command - requires admin permission
-            if (!player.hasPermission("myplugin.admin")) {
+            if (!player.hasPermission("deathmode.admin")) {
                 player.sendMessage(config.getNoPermissionMessage());
                 return true;
             }
@@ -141,7 +142,7 @@ public final class DeathMode implements CommandExecutor, TabCompleter, Listener 
             }
         } else if (args.length >= 2 && args[0].equalsIgnoreCase(this.completeList[2]) && args[1].equalsIgnoreCase("edit")) {
             // config edit command - requires admin permission
-            if (!player.hasPermission("myplugin.admin")) {
+            if (!player.hasPermission("deathmode.admin")) {
                 player.sendMessage(config.getNoPermissionMessage());
                 return true;
             }
@@ -190,6 +191,10 @@ public final class DeathMode implements CommandExecutor, TabCompleter, Listener 
                     "deathmode.disableMessage",
                     "deathmode.deathLogging",
                     "deathmode.autodeathmodeOnDeath",
+                    "deathmode.teams",
+                    "deathmode.players",
+                    "deathmode.BeforeDeathGameMode",
+                    "deathmode.AfterDeathGameMode",
                     "messages.noPermission",
                     "messages.playerOnly",
                     "messages.usage",
@@ -198,7 +203,8 @@ public final class DeathMode implements CommandExecutor, TabCompleter, Listener 
         } else if (args.length == 3 && args[0].equalsIgnoreCase("config")
                 && (args[1].equalsIgnoreCase("add") || args[1].equalsIgnoreCase("remove"))) {
             // 配列キーの候補を提供
-            return Arrays.asList("deathmode.teams", "deathmode.players");
+            return Arrays.asList("deathmode.teams", "deathmode.players",
+                    "deathmode.BeforeDeathGameMode", "deathmode.AfterDeathGameMode");
         } else if (args.length == 4 && args[0].equalsIgnoreCase("config") && args[1].equalsIgnoreCase("edit")) {
             // boolean値のキーに対する候補
             String key = args[2];
@@ -216,7 +222,7 @@ public final class DeathMode implements CommandExecutor, TabCompleter, Listener 
      */
     private boolean isPlayerAllowed(Player player) {
         // 管理者権限があれば常に許可
-        if (player.hasPermission("myplugin.admin")) {
+        if (player.hasPermission("deathmode.admin")) {
             return true;
         }
 
@@ -248,6 +254,9 @@ public final class DeathMode implements CommandExecutor, TabCompleter, Listener 
             case "deathmode.players":
                 currentList = new ArrayList<>(config.getAllowedPlayers());
                 break;
+            case "deathmode.BeforeDeathGameMode":
+                currentList = new ArrayList<>(config.getBeforeDeathGameMode());
+                break;
             default:
                 throw new IllegalArgumentException("サポートされていない配列キーです: " + arrayKey);
         }
@@ -269,6 +278,9 @@ public final class DeathMode implements CommandExecutor, TabCompleter, Listener 
                 break;
             case "deathmode.players":
                 currentList = new ArrayList<>(config.getAllowedPlayers());
+                break;
+            case "deathmode.BeforeDeathGameMode":
+                currentList = new ArrayList<>(config.getBeforeDeathGameMode());
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported key: " + arrayKey);

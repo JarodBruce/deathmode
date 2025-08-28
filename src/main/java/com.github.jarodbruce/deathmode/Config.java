@@ -132,6 +132,14 @@ public class Config {
         return getStringList("deathmode.players", Arrays.asList("player1", "player2"));
     }
 
+    public List<String> getBeforeDeathGameMode() {
+        return getStringList("deathmode.BeforeDeathGameMode", Arrays.asList("survival"));
+    }
+
+    public String getAfterDeathGameMode() {
+        return getString("deathmode.AfterDeathGameMode", "spectator");
+    }
+
     // メッセージ設定の取得メソッド
     public String getNoPermissionMessage() {
         return getString("messages.noPermission", "You don't have permission to use this command");

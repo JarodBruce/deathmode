@@ -9,6 +9,11 @@
       "player1",
       "player2"
     ],
+    "BeforeDeathGameMode":[
+      "survival",
+      "adventure"
+    ],
+    "AfterDeathGameMode": "spectator",
     "enableMessage": "スペクテイターモードが有効になりました",
     "disableMessage": "スペクテイターモードが無効になりました",
     "deathLogging": true,
