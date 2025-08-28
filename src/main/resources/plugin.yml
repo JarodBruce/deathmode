@@ -2,3 +2,8 @@ name: DeathMode
 version: 1.0-SNAPSHOT
 main: com.github.jarodbruce.deathmode.DeathModePlugin
 api-version: 1.16
+
+commands:
+  deathmode:
+    description: DeathMode command
+    usage: /deathmode <enable|disable|config> [edit <key> <value>]
