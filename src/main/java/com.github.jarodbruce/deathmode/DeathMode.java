@@ -30,28 +30,32 @@ public final class DeathMode implements CommandExecutor, TabCompleter, Listener 
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        // スペクテイター機能が無効の場合
-        if (!config.isdeathmodeEnabled()) {
-            sender.sendMessage("スペクテイター機能は現在無効になっています");
-            return true;
-        }
-
-        if (!(sender instanceof Player)) {
-            sender.sendMessage("スペクテイター機能は現在無効になっています");
-            for (String configEntry : config.getConfigList()) {
-                plugin.getServer().broadcastMessage(configEntry);
-            }
-            return true;
-        }
 
         Player player = (Player) sender;
 
         if (args.length == 1 && args[0].equalsIgnoreCase(this.completeList[0])) {
-            plugin.getServer().broadcastMessage("deathmode is enabled");
-            player.sendMessage("§aあなたは死亡モードを有効にしました");
+            try {
+                // 値の型を推測して設定
+                Object convertedValue = convertStringToAppropriateType("true");
+                config.set("deathmode.enabled", convertedValue);
+                config.saveConfig();
+                plugin.getServer().broadcastMessage("deathmode is enabled");
+            } catch (Exception e) {
+                player.sendMessage("§c設定の更新に失敗しました: " + e.getMessage());
+                plugin.getLogger().severe(String.format("設定の更新に失敗: %s", e.getMessage()));
+            }
 
         } else if (args.length == 1 && args[0].equalsIgnoreCase(this.completeList[1])) {
-            plugin.getServer().broadcastMessage("deathmode is disabled");
+            try {
+                // 値の型を推測して設定
+                Object convertedValue = convertStringToAppropriateType("false");
+                config.set("deathmode.enabled", convertedValue);
+                config.saveConfig();
+                plugin.getServer().broadcastMessage("deathmode is disabled");
+            } catch (Exception e) {
+                player.sendMessage("§c設定の更新に失敗しました: " + e.getMessage());
+                plugin.getLogger().severe(String.format("設定の更新に失敗: %s", e.getMessage()));
+            }
 
         } else if (args.length == 1 && args[0].equalsIgnoreCase(this.completeList[2])) {
             // show config list
@@ -254,28 +258,6 @@ public final class DeathMode implements CommandExecutor, TabCompleter, Listener 
     @org.bukkit.event.EventHandler
     public void onPlayerDeath(org.bukkit.event.entity.PlayerDeathEvent event) {
         Player player = event.getEntity();
-
-        // デスログが無効の場合は何もしない
-        if (!config.isDeathLoggingEnabled()) {
-            return;
-        } else {
-            event.setDeathMessage(null);
-        }
-
-        // only handle if this player enabled deathmode via our command
-        if (!enabledPlayers.contains(player.getUniqueId())) {
-            // 自動スペクテイター設定が有効で、プラグインが有効な場合
-            if (config.isAutodeathmodeOnDeath() && config.isdeathmodeEnabled()) {
-                enabledPlayers.add(player.getUniqueId());
-                // 少し遅延してスペクテイターモードに設定（リスポーン後）
-                plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                    player.setGameMode(org.bukkit.GameMode.SPECTATOR);
-                    player.sendMessage("死亡により自動的にスペクテイターモードになりました");
-                }, 20L); // 1秒後
-            }
-            return;
-        }
-
         // チーム取得
         org.bukkit.scoreboard.Team team = player.getScoreboard().getPlayerTeam(player);
         String teamName = team != null ? team.getName() : "none";
@@ -289,9 +271,21 @@ public final class DeathMode implements CommandExecutor, TabCompleter, Listener 
         String logMessage = "death: " + username + ", team: " + teamName + ", gamemode: " + gameMode;
 
         if (config.isDebugEnabled()) {
-            plugin.getServer().broadcastMessage("[DEBUG] " + logMessage);
-        } else {
             plugin.getLogger().info(logMessage);
+        }
+
+        if (config.getAllowedPlayers().contains(username) || config.getAllowedTeams().contains(teamName)) {
+            if (config.getBeforeDeathGameMode().stream().map(Object::toString).anyMatch(s -> s.equalsIgnoreCase(gameMode.name()))) {
+                Object after = config.getAfterDeathGameMode();
+                String mode = (after instanceof java.util.List && !((java.util.List<?>) after).isEmpty())
+                        ? String.valueOf(((java.util.List<?>) after).get(0))
+                        : String.valueOf(after);
+                try {
+                    player.setGameMode(org.bukkit.GameMode.valueOf(mode.toUpperCase()));
+                } catch (IllegalArgumentException ex) {
+                    plugin.getLogger().warning("Invalid AfterDeathGameMode: " + mode);
+                }
+            }
         }
     }
 
