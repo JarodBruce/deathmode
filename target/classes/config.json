@@ -1,6 +1,6 @@
 {
   "deathmode": {
-    "enabled": true,
+    "enabled": false,
     "teams": [
       "team1",
       "team2"
@@ -14,15 +14,10 @@
       "adventure"
     ],
     "AfterDeathGameMode": "spectator",
-    "enableMessage": "スペクテイターモードが有効になりました",
-    "disableMessage": "スペクテイターモードが無効になりました",
+    "enableMessage": "enabled deathmode",
+    "disableMessage": "disabled deathmode",
     "deathLogging": true,
     "autoDeathmodeOnDeath": false
-  },
-  "messages": {
-    "noPermission": "このコマンドを実行する権限がありません",
-    "playerOnly": "このコマンドはプレイヤーのみ実行できます",
-    "usage": "使用方法: /deathmode <enable|disable|config> [edit|add|remove <キー> <値>]"
   },
   "debug": false
 }

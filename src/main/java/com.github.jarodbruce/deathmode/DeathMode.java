@@ -37,11 +37,9 @@ public final class DeathMode implements CommandExecutor, TabCompleter, Listener 
         }
 
         if (!(sender instanceof Player)) {
-            String playerOnlyMessage = config.getPlayerOnlyMessage();
-            if (playerOnlyMessage != null) {
-                sender.sendMessage(playerOnlyMessage);
-            } else {
-                sender.sendMessage("このコマンドはプレイヤーのみ実行できます");
+            sender.sendMessage("スペクテイター機能は現在無効になっています");
+            for (String configEntry : config.getConfigList()) {
+                plugin.getServer().broadcastMessage(configEntry);
             }
             return true;
         }
@@ -49,36 +47,16 @@ public final class DeathMode implements CommandExecutor, TabCompleter, Listener 
         Player player = (Player) sender;
 
         if (args.length == 1 && args[0].equalsIgnoreCase(this.completeList[0])) {
-            // enable deathmode for this player
+            plugin.getServer().broadcastMessage("deathmode is enabled");
+            player.sendMessage("§aあなたは死亡モードを有効にしました");
 
-            // チーム・プレイヤーチェック
-            if (!isPlayerAllowed(player)) {
-                player.sendMessage("§cあなたはスペクテイターモードを使用する権限がありません");
-                return true;
-            }
-
-            enabledPlayers.add(player.getUniqueId());
-            player.setGameMode(org.bukkit.GameMode.SPECTATOR);
-
-            player.sendMessage(config.getEnableMessage());
-
-            if (config.isDebugEnabled()) {
-                plugin.getLogger().info(String.format("Player %s enabled deathmode mode", player.getName()));
-            }
         } else if (args.length == 1 && args[0].equalsIgnoreCase(this.completeList[1])) {
-            // disable deathmode for this player
-            enabledPlayers.remove(player.getUniqueId());
-            player.setGameMode(org.bukkit.GameMode.SURVIVAL);
-            player.sendMessage(config.getDisableMessage());
-
-            if (config.isDebugEnabled()) {
-                plugin.getLogger().info(String.format("Player %s disabled deathmode mode", player.getName()));
-            }
+            plugin.getServer().broadcastMessage("deathmode is disabled");
 
         } else if (args.length == 1 && args[0].equalsIgnoreCase(this.completeList[2])) {
             // show config list
             try {
-                player.sendMessage("§e=== スペクテイター設定一覧 ===");
+                player.sendMessage("§e=== deathmode ===");
                 for (String configEntry : config.getConfigList()) {
                     player.sendMessage(configEntry);
                 }
@@ -91,11 +69,6 @@ public final class DeathMode implements CommandExecutor, TabCompleter, Listener 
                 plugin.getLogger().severe(String.format("設定一覧の取得に失敗: %s", e.getMessage()));
             }
         } else if (args.length >= 2 && args[0].equalsIgnoreCase(this.completeList[2]) && args[1].equalsIgnoreCase("add")) {
-            // config add command - requires admin permission
-            if (!player.hasPermission("deathmode.admin")) {
-                player.sendMessage(config.getNoPermissionMessage());
-                return true;
-            }
 
             if (args.length == 4) {
                 // /deathmode config add <array_key> <value>
@@ -113,17 +86,11 @@ public final class DeathMode implements CommandExecutor, TabCompleter, Listener 
                     plugin.getLogger().severe(String.format("配列への追加に失敗: %s", e.getMessage()));
                 }
             } else {
-                player.sendMessage("§c使用方法: /deathmode config add <配列キー> <値>");
+                player.sendMessage("§cUsage: /deathmode config add <array_key> <value>");
             }
         } else if (args.length >= 2 && args[0].equalsIgnoreCase(this.completeList[2]) && args[1].equalsIgnoreCase("remove")) {
-            // config remove command - requires admin permission
-            if (!player.hasPermission("deathmode.admin")) {
-                player.sendMessage(config.getNoPermissionMessage());
-                return true;
-            }
 
             if (args.length == 4) {
-                // /deathmode config remove <array_key> <value>
                 String arrayKey = args[2];
                 String value = args[3];
 
@@ -138,14 +105,9 @@ public final class DeathMode implements CommandExecutor, TabCompleter, Listener 
                     plugin.getLogger().severe(String.format("配列からの削除に失敗: %s", e.getMessage()));
                 }
             } else {
-                player.sendMessage("§c使用方法: /deathmode config remove <配列キー> <値>");
+                player.sendMessage("§cUsage: /deathmode config remove <array_key> <value>");
             }
         } else if (args.length >= 2 && args[0].equalsIgnoreCase(this.completeList[2]) && args[1].equalsIgnoreCase("edit")) {
-            // config edit command - requires admin permission
-            if (!player.hasPermission("deathmode.admin")) {
-                player.sendMessage(config.getNoPermissionMessage());
-                return true;
-            }
 
             if (args.length == 4) {
                 // /deathmode config edit <key> <value>
@@ -165,16 +127,14 @@ public final class DeathMode implements CommandExecutor, TabCompleter, Listener 
                     plugin.getLogger().severe(String.format("設定の更新に失敗: %s", e.getMessage()));
                 }
             } else {
-                player.sendMessage("§c使用方法: /deathmode config edit <キー> <値>");
+                player.sendMessage("§cUsage: /deathmode config edit <array_key> <value>");
             }
-        } else {
-            player.sendMessage(config.getUsageMessage());
         }
 
         if (config.isDebugEnabled()) {
             this.plugin.getLogger().info(String.format("deathmode command executed by %s", sender.getName()));
         }
-        return true; // 成功で返す
+        return true;
     }
 
     @Override
@@ -215,33 +175,6 @@ public final class DeathMode implements CommandExecutor, TabCompleter, Listener 
         }
 
         return null;
-    }
-
-    /**
-     * プレイヤーがスペクテイターモードを使用できるかチェック
-     */
-    private boolean isPlayerAllowed(Player player) {
-        // 管理者権限があれば常に許可
-        if (player.hasPermission("deathmode.admin")) {
-            return true;
-        }
-
-        List<String> allowedPlayers = config.getAllowedPlayers();
-        List<String> allowedTeams = config.getAllowedTeams();
-
-        // プレイヤー名でチェック
-        if (allowedPlayers.contains(player.getName())) {
-            return true;
-        }
-
-        // チームでチェック
-        org.bukkit.scoreboard.Team team = player.getScoreboard().getPlayerTeam(player);
-        if (team != null && allowedTeams.contains(team.getName())) {
-            return true;
-        }
-
-        // 設定が空の場合は全員許可
-        return allowedPlayers.isEmpty() && allowedTeams.isEmpty();
     }
 
     private void addToArray(String arrayKey, String value) {
@@ -294,9 +227,6 @@ public final class DeathMode implements CommandExecutor, TabCompleter, Listener 
         }
     }
 
-    /**
-     * 文字列値を適切な型に変換する
-     */
     private Object convertStringToAppropriateType(String value) {
         // boolean値の場合
         if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {

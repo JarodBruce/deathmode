@@ -105,7 +105,7 @@ public class Config {
 
     // deathmode設定の取得メソッド
     public boolean isdeathmodeEnabled() {
-        return getBoolean("deathmode.enabled", true);
+        return getBoolean("deathmode.enabled", false);
     }
 
     public String getEnableMessage() {
@@ -138,19 +138,6 @@ public class Config {
 
     public String getAfterDeathGameMode() {
         return getString("deathmode.AfterDeathGameMode", "spectator");
-    }
-
-    // メッセージ設定の取得メソッド
-    public String getNoPermissionMessage() {
-        return getString("messages.noPermission", "You don't have permission to use this command");
-    }
-
-    public String getPlayerOnlyMessage() {
-        return getString("messages.playerOnly", "This command can only be used by players");
-    }
-
-    public String getUsageMessage() {
-        return getString("messages.usage", "使用方法: /deathmode <enable|disable|config> [edit|add|remove <キー> <値>]");
     }
 
     // デバッグ設定
@@ -234,9 +221,6 @@ public class Config {
         return defaultValue;
     }
 
-    /**
-     * 設定値を動的に設定
-     */
     public void set(String path, Object value) {
         try {
             String[] keys = path.split("\\.");
@@ -258,9 +242,6 @@ public class Config {
         }
     }
 
-    /**
-     * 設定一覧を取得
-     */
     public List<String> getConfigList() {
         List<String> configList = new ArrayList<>();
         if (config != null) {
@@ -269,9 +250,6 @@ public class Config {
         return configList;
     }
 
-    /**
-     * 設定をトラバースして一覧を作成
-     */
     private void traverseConfig(JsonObject jsonObject, String prefix, List<String> configList) {
         for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
             String key = entry.getKey();

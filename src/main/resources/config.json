@@ -1,6 +1,6 @@
 {
   "deathmode": {
-    "enabled": true,
+    "enabled": false,
     "teams": [
       "team1",
       "team2"
@@ -18,11 +18,6 @@
     "disableMessage": "disabled deathmode",
     "deathLogging": true,
     "autoDeathmodeOnDeath": false
-  },
-  "messages": {
-    "noPermission": "Permission denied",
-    "playerOnly": "Player only command",
-    "usage": "Usage: /deathmode <enable|disable|config> [edit|add|remove <key> <value>]"
   },
   "debug": false
 }
